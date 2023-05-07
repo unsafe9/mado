@@ -7,14 +7,19 @@ import (
 	"syscall"
 )
 
-func StartListener(ctx context.Context, addr string) {
-	setFDLimit()
+type Listener struct {
+	Beacon *Beacon
+	sid    uint32
+}
 
-	lc := net.ListenConfig{}
-	ln, err := lc.Listen(ctx, "tcp", addr)
+func (l *Listener) Run(ctx context.Context, addr string) {
+	ln, err := net.Listen("tcp", addr)
 	if err != nil {
 		panic(err)
 	}
+	defer ln.Close()
+
+	logrus.Infof("listening on %s", ln.Addr().String())
 
 	for {
 		conn, err := ln.Accept()
@@ -23,17 +28,27 @@ func StartListener(ctx context.Context, addr string) {
 			return
 		}
 
-		session := newSession(conn)
+		l.sid++
+		session := &Session{
+			sid:    l.sid,
+			conn:   conn,
+			Beacon: l.Beacon,
+		}
 		go session.Run(ctx)
+		l.Beacon.Join(session)
 	}
 }
 
-func setFDLimit() {
+func (l *Listener) SetFDLimit(max int) {
 	var rLimit syscall.Rlimit
 	if err := syscall.Getrlimit(syscall.RLIMIT_NOFILE, &rLimit); err != nil {
 		panic(err)
 	}
-	rLimit.Cur = rLimit.Max
+	if max < 0 {
+		rLimit.Cur = rLimit.Max
+	} else {
+		rLimit.Cur = uint64(max)
+	}
 	if err := syscall.Setrlimit(syscall.RLIMIT_NOFILE, &rLimit); err != nil {
 		panic(err)
 	}

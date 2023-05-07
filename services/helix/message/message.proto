@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package helix;
+option go_package = "github.com/unsafe9/mado/services/helix/message";
+
+message MessageType {
+  enum Type {
+    None = 0;
+    S2CUpdatePosition = 1;
+    C2SUpdatePosition = 2;
+  }
+  Type type = 1;
+}
+
+message S2CUpdatePosition {
+  MessageType.Type type = 1;
+  uint32 ID = 2;
+  int32 X = 3;
+  int32 Y = 4;
+  int32 Z = 5;
+}
+
+message C2SUpdatePosition {
+  MessageType.Type type = 1;
+  int32 X = 2;
+  int32 Y = 3;
+  int32 Z = 4;
+}
