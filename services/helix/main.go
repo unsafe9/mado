@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/unsafe9/mado/helix/session"
+	"github.com/unsafe9/mado/services/helix/session"
 	"log"
 	"net/http"
 	_ "net/http/pprof"

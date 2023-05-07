@@ -1,4 +1,4 @@
-module helix
+module github.com/unsafe9/mado/services/helix
 
 go 1.20
 
